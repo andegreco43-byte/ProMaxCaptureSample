@@ -502,6 +502,21 @@ class CameraViewModel: ObservableObject {
             if session.canAddInput(videoDeviceInput) {
                 session.addInput(videoDeviceInput)
                 self.videoDeviceInput = videoDeviceInput
+
+              // Enable continuous autofocus
+              let device = videoDeviceInput.device
+              do {
+                  try device.lockForConfiguration()
+                  if device.isFocusModeSupported(.continuousAutoFocus) {
+                      device.focusMode = .continuousAutoFocus
+                  }
+                  if device.isAutoFocusRangeRestrictionSupported {
+                      device.autoFocusRangeRestriction = .near
+                  }
+                  device.unlockForConfiguration()
+              } catch {
+                  logger.error("Could not configure autofocus: \(String(describing: error))")
+              }
             } else {
                 logger.error("Couldn't add video device input to the session.")
                 setupResult = .configurationFailed
